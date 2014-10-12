@@ -33,7 +33,7 @@ namespace HTTPDuino
             Debug.Print(Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress);
 
             //Start listen for web requests
-            socket.Listen(10);
+            socket.Listen(5);
             //onRequest();
         }
 
@@ -101,10 +101,10 @@ namespace HTTPDuino
                                         HTTPDuino.HTTPFile content = new HTTPFile(requestedResource);
                                         HTTPDuino.HTTPHeaderResponse response = new HTTPHeaderResponse(ResponseType.OK_200);
                                         response.ContentType = content.getMIMEType();
-                                        
+
                                         try
                                         {
-                                            if ((response.ContentType == "text/html") || (response.ContentType == "text/javascript") || (response.ContentType == "text/css") || (response.ContentType == "text/xml"))
+                                            if (string.Compare(response.ContentType.Split('/')[0].ToLower(), "text")  == 0)
                                             {
                                                 //the page will be send chunked
                                                 response.ContentChunked = true;
@@ -120,7 +120,10 @@ namespace HTTPDuino
                                                 int read = 0;
                                                 while (!content.endOfBlocks())
                                                 {
+                                                    //get a single chunk of data, formatted as it should be
                                                     int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
+
+                                                    //send the chunk of data
                                                     clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
                                                 }
 
@@ -129,7 +132,7 @@ namespace HTTPDuino
                                             }
                                             else
                                             {
-                                                //the page will be sent splitted
+                                                //the page will be sent splitted, but the server will provide its length
                                                 response.ContentLength = content.fileInfo.Length;
 
                                                 //send the header
