@@ -143,28 +143,27 @@ namespace HTTPDuino
             return readCharacters.Length;
         }
 
-        public int getBlock(ref byte[] bytes, ref int read)
+        public void getBlock(ref byte[] bytes, ref int read)
         {
             //empty the byte container that will be filled by a portion of file
             bytes = null;
 
             //the buffer that will be filled with 50 (or less) chars 
-            char[] buffer = new char[255];
+            MemoryStream buffer = new MemoryStream();
 
             for (read = 0; ((read < 255) && ((this.currentPosition + read) < this.fileInfo.Length)); read++)
-                buffer[read] = (char)this.fileStream.Read();
-
-            //convert read characters to a string
-            string readCharacters = new string(buffer);
-
-            //convert the string to an UTF-8 array of data
-            bytes = Encoding.UTF8.GetBytes(readCharacters);
+            {
+                byte[] data = BitConverter.GetBytes(this.fileStream.Read());
+                buffer.Write(data, 0, data.Length);
+            }
+            //get the bytes
+            buffer.Close();
+            bytes = buffer.ToArray();
+            buffer.Dispose();
+            buffer = null;
 
             //update the current position
             this.currentPosition += read;
-
-            //return the number of character read
-            return readCharacters.Length;
         }
 
         public bool endOfBlocks()

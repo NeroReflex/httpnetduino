@@ -143,8 +143,8 @@ namespace HTTPDuino
                                                 int read = 0;
                                                 while (!content.endOfBlocks())
                                                 {
-                                                    int lengthOfSocketMessage = content.getBlock(ref toSend, ref read);
-                                                    clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
+                                                    content.getBlock(ref toSend, ref read);
+                                                    clientSocket.Send(toSend, SocketFlags.None);
                                                 }
                                             }
                                         }
