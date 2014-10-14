@@ -39,7 +39,7 @@ namespace HTTPDuino
             MemoryStream memory = new MemoryStream();
 
             read = 0;
-            while (/*(read < 255) && ((this.currentPosition + read) < this.fileBytes.BaseStream.Length)*/this.fileBytes.EndOfStream)
+            while ((read < 255) && ((this.currentPosition + read) < this.fileBytes.BaseStream.Length)/*this.fileBytes.EndOfStream*/)
             {
                 buffer[read] = (char)this.fileBytes.Read();
                 //memory.Write(buffer, 0, buffer.Length);
