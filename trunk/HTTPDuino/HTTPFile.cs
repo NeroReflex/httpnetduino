@@ -5,34 +5,32 @@ using Microsoft.SPOT;
 
 namespace HTTPDuino
 {
-    public class HTTPFile : IDisposable
+    public class HTTPFile
     {
-        private string filePath;
-        public readonly System.IO.FileInfo fileInfo;
-        private System.IO.StreamReader fileStream;
-        private int currentPosition;
+        private string path;
 
-        public HTTPFile(string path)
+        public HTTPFile(string file)
         {
-            //check the file existance
-            if (!System.IO.File.Exists(path))
-                throw new Exception("The file " + path + " doesn't exists");
+            //save the file path
+            this.path = file;
+        }
 
-            //store the file path
-            this.filePath = path;
+        public HTTPDuino.HTTPBinaryFile getBinaryFile()
+        {
+            HTTPDuino.HTTPBinaryFile binaryFile = new HTTPDuino.HTTPBinaryFile(this.path);
+            return binaryFile;
+        }
 
-            //obtain info about the file
-            this.fileInfo = new System.IO.FileInfo(this.filePath);
-
-            //initialize the reader
-            this.currentPosition = 0;
-            this.fileStream = new StreamReader(this.filePath);
+        public HTTPDuino.HTTPTextFile getTextFile()
+        {
+            HTTPDuino.HTTPTextFile textFile = new HTTPDuino.HTTPTextFile(this.path);
+            return textFile;
         }
 
         public string getMIMEType()
         {
             string MIMEType = "";
-            string extension = this.fileInfo.Extension.ToLower();
+            string extension = System.IO.Path.GetExtension(this.path).ToLower();
             switch (extension)
             {
                 //web related
@@ -93,7 +91,7 @@ namespace HTTPDuino
                 case ".pdf":
                     MIMEType = "application/pdf";
                     break;
-                    
+
                 //images related
                 case ".jpg":
                     MIMEType = "image/jpeg";
@@ -110,82 +108,14 @@ namespace HTTPDuino
                 case ".ico":
                     MIMEType = "image/x-icon";
                     break;
-                    
+
                 default:
                     MIMEType = "text/plain";
                     break;
             }
             return MIMEType;
         }
-
-        public int getChunkedBlock(ref byte[] bytes, ref int read)
-        {
-            //empty the byte container that will be filled by a portion of file
-            bytes = null;
-
-            //the buffer that will be filled with 50 (or less) chars 
-            char[] buffer = new char[255];
-
-            for (read = 0;((read < 255) && ((this.currentPosition + read) < this.fileInfo.Length)); read++)
-                buffer[read] = (char)this.fileStream.Read();
-
-            //convert read characters to a string
-            string readCharacters = new string(buffer);
-            readCharacters = read.ToString("X2") + "\r\n" + readCharacters + "\r\n";
-
-            //convert the string to an UTF-8 array of data
-            bytes = Encoding.UTF8.GetBytes(readCharacters);
-
-            //update the current position
-            this.currentPosition += read;
-
-            //return the number of character read
-            return readCharacters.Length;
-        }
-
-        public void getBlock(ref byte[] bytes, ref int read)
-        {
-            //empty the byte container that will be filled by a portion of file
-            bytes = null;
-
-            //the buffer that will be filled with 50 (or less) chars 
-            MemoryStream buffer = new MemoryStream();
-
-            for (read = 0; ((read < 255) && ((this.currentPosition + read) < this.fileInfo.Length)); read++)
-            {
-                byte[] data = BitConverter.GetBytes(this.fileStream.Read());
-                buffer.Write(data, 0, data.Length);
-            }
-            //get the bytes
-            buffer.Close();
-            bytes = buffer.ToArray();
-            buffer.Dispose();
-            buffer = null;
-
-            //update the current position
-            this.currentPosition += read;
-        }
-
-        public bool endOfBlocks()
-        {
-            return (this.fileInfo.Length == this.currentPosition);
-        }
-
-        #region IDisposable Members
-        ~HTTPFile()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            //delete every file-related objects
-            this.fileStream.Close();
-            //this.fileStream = null;
-            this.filePath = string.Empty;
-            this.filePath = null;
-            //this.fileInfo = null;
-        }
-        #endregion
     }
+
 }
+

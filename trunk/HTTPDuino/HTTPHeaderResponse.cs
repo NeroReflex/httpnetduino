@@ -17,6 +17,7 @@ namespace HTTPDuino
         public string ContentMD5;
         public long ContentLength;
         public bool ContentChunked;
+        public bool ContentInline;
 
         public HTTPHeaderResponse(ResponseType type)
         {
@@ -24,6 +25,7 @@ namespace HTTPDuino
             this.typeOfResponse = type;
             this.ContentMD5 = string.Empty;
             this.ContentLength = -1;
+            this.ContentInline = false;
         }
 
         public string Encode()
@@ -62,6 +64,10 @@ namespace HTTPDuino
             if (this.ContentType == string.Empty)
                 this.ContentType = "text/plain";
             headerText += " \r\nServer: NETDuino\r\nX-Powered-By: HTTPDuino\r\nContent-Type: " + ContentType + "; charset=utf-8\r\n";
+
+            //insert the content inline
+            if (this.ContentInline)
+                headerText += "Content-Disposition: inline;\r\n";
 
             //insert the content length (if specified)
             if (this.ContentLength > 0)
