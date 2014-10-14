@@ -35,17 +35,15 @@ namespace HTTPDuino
         {
             //empty the byte container that will be filled by a portion of file
             char[] buffer = new char[255];
-            int next = 0;
 
             MemoryStream memory = new MemoryStream();
 
             read = 0;
             while (/*(read < 255) && ((this.currentPosition + read) < this.fileBytes.BaseStream.Length)*/this.fileBytes.EndOfStream)
             {
-                buffer[next] = (char)this.fileBytes.Read();
+                buffer[read] = (char)this.fileBytes.Read();
                 //memory.Write(buffer, 0, buffer.Length);
-                read += 2;
-                next++;
+                read++;
             }
 
             memory.Close();/*
