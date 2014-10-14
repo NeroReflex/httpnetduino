@@ -33,7 +33,7 @@ namespace HTTPDuino
             Debug.Print(Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress);
 
             //Start listen for web requests
-            socket.Listen(5);
+            socket.Listen(15);
             //onRequest();
         }
 
@@ -98,14 +98,16 @@ namespace HTTPDuino
                                     if (fileFound)
                                     {
                                         //transmit the file
-                                        HTTPDuino.HTTPFile content = new HTTPFile(requestedResource);
                                         HTTPDuino.HTTPHeaderResponse response = new HTTPHeaderResponse(ResponseType.OK_200);
-                                        response.ContentType = content.getMIMEType();
+                                        HTTPDuino.HTTPFile file = new HTTPFile(requestedResource);
+                                        response.ContentType = file.getMIMEType();
 
-                                        try
-                                        {
+                                        /*try
+                                        {*/
                                             if (string.Compare(response.ContentType.Split('/')[0].ToLower(), "text")  == 0)
                                             {
+                                                HTTPDuino.HTTPTextFile content = file.getTextFile();
+
                                                 //the page will be send chunked
                                                 response.ContentChunked = true;
 
@@ -124,30 +126,51 @@ namespace HTTPDuino
                                                     int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
 
                                                     //send the chunk of data
-                                                    clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
+                                                    //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                                        clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
+                                                    //else
+                                                    //    break;
                                                 }
 
+                                                //send the end of the page
                                                 string endOfChunks = "00\r\n\r\n";
-                                                clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
+
+                                                //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                                    clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
+
+                                                //destroy the object
+                                                content.Dispose();
                                             }
                                             else
                                             {
+                                                HTTPDuino.HTTPBinaryFile content = file.getBinaryFile();
+
                                                 //the page will be sent splitted, but the server will provide its length
-                                                response.ContentLength = content.fileInfo.Length;
+                                                response.ContentLength = content.getLength();
+                                                response.ContentInline = true;
 
                                                 //send the header
                                                 string Header = response.Encode();
                                                 clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
 
-                                                byte[] toSend = null;
                                                 int read = 0;
+                                                
                                                 while (!content.endOfBlocks())
                                                 {
-                                                    content.getBlock(ref toSend, ref read);
-                                                    clientSocket.Send(toSend, SocketFlags.None);
+                                                    string BlockOfMessage = content.getBlock(ref read);
+                                                    byte[] bytes = Encoding.UTF8.GetBytes(BlockOfMessage);
+
+                                                    //send utf-8 data
+                                                    if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                                        clientSocket.Send(bytes, SocketFlags.None);
+                                                    else
+                                                        break;
                                                 }
+
+                                                //destroy the object
+                                                content.Dispose();
                                             }
-                                        }
+                                        /*}
                                         catch (SocketException ex)
                                         {
                                             Debug.Print("Socket error number " + ex.ErrorCode + "\r\n" + ex.Message);
@@ -158,8 +181,8 @@ namespace HTTPDuino
                                         }
                                         finally
                                         {
-                                            content.Dispose();
-                                        }
+                                            
+                                        }*/
                                     }
                                     else
                                     {//transmit a 404 Not Found
