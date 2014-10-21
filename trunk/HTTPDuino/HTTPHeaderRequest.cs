@@ -16,13 +16,13 @@ namespace HTTPDuino
         public RequestType type;
         public string resource;
         public string client;
-        /* public bool UTF8Compatible; */
+        public bool GZIPCompatible;
 
         public HTTPHeaderRequest()
         {
             //initialize the header with empty values
             this.type = RequestType.GET;
-            /* this.UTF8Compatible = false; */
+            this.GZIPCompatible = false;
             this.resource = string.Empty;
             this.client = string.Empty;
             this.client = string.Empty;
@@ -31,8 +31,7 @@ namespace HTTPDuino
         public Int16 Decode(ref byte[] request)
         {
             //build the request string from received bytes
-            string requestText;
-            requestText = new string(Encoding.UTF8.GetChars(request));
+            string requestText = new string(Encoding.UTF8.GetChars(request));
 
             //check the request string (compare with the smallest header possible)
             if (requestText.Length < "get / HTTP/1.1\r\n".Length)
@@ -107,14 +106,11 @@ namespace HTTPDuino
             //clean the string encoder for future use
             builder.Clear();
 
-            /*
-            //check if che client want an UTF-8 encoded content
-            if ((requestText.ToLower().IndexOf("utf-8") > 0) || (requestText.ToLower().IndexOf("utf8") > 0))
-                this.UTF8Compatible = true;
+            //check if che client want a GZip encoded content
+            if (requestText.ToLower().IndexOf("gzip") > 0)
+                this.GZIPCompatible = true;
             else
-                this.UTF8Compatible = false;
-
-            */
+                this.GZIPCompatible = false;
 
             //get the starting position of the client name (browser)
             int user_agent_index = requestText.IndexOf("User-Agent:");

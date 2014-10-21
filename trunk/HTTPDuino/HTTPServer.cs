@@ -49,13 +49,17 @@ namespace HTTPDuino
                     int bytesReceived = clientSocket.Available;
                     if (bytesReceived > 0)
                     {
-                        //get request
+                        //set the receive timeout
                         clientSocket.ReceiveTimeout = this.serverConfiguration.ReceiveTimeout;
+
+                        //get the HTTP request
                         byte[] buffer = new byte[bytesReceived];
                         int byteCount = clientSocket.Receive(buffer, bytesReceived, SocketFlags.None);
 
-                        //decode the request
+                        //create the decoder
                         HTTPDuino.HTTPHeaderRequest browserRequest = new HTTPHeaderRequest();
+
+                        //decode the request
                         if (browserRequest.Decode(ref buffer) == 0)
                         {
                             string getRequest = browserRequest.resource;
@@ -97,15 +101,55 @@ namespace HTTPDuino
                                     //transmit the file or a 404
                                     if (fileFound)
                                     {
+                                        //should the server send script.min.gzip.js?
+                                        bool gzip = false;
+                                        string[] fileShrinkedInfo = requestedResource.Split('.');
+
+                                        //if a gzip version of the file might exists.....
+                                        if ((fileShrinkedInfo.Length >= 3) && (browserRequest.GZIPCompatible))
+                                        {
+                                            if (fileShrinkedInfo[fileShrinkedInfo.Length - 2].ToLower() == "min")
+                                            {
+                                                //is the file gzippable?
+                                                bool gzippable = false;
+
+                                                //file extension
+                                                string extension = fileShrinkedInfo[fileShrinkedInfo.Length - 1].ToLower();
+
+                                                //check if the file can be gzzipped
+                                                if ((extension == "js") || (extension == "css") || (extension == "html"))
+                                                    gzippable = true;
+
+                                                //generate its name
+                                                string gzipFile = string.Empty;
+
+                                                if (gzippable)
+                                                    for (int i = 0; i < fileShrinkedInfo.Length; i++)
+                                                    {
+                                                        gzipFile += fileShrinkedInfo[i];
+                                                        if (i != (fileShrinkedInfo.Length - 1))
+                                                            gzipFile += ".";
+                                                        if (fileShrinkedInfo[i].ToLower() == "min")
+                                                            gzipFile += "gzip.";
+                                                    }
+                                                
+                                                //check wether the gzippeed file is requested and existant
+                                                if ((System.IO.File.Exists(gzipFile)) && (gzippable))
+                                                {
+                                                    gzip = true;
+                                                    requestedResource = gzipFile;
+                                                }
+                                            }
+                                        }
+
                                         //transmit the file
                                         HTTPDuino.HTTPHeaderResponse response = new HTTPHeaderResponse(ResponseType.OK_200);
                                         HTTPDuino.HTTPFile file = new HTTPFile(requestedResource);
                                         response.ContentType = file.getMIMEType();
 
-                                        /*try
-                                        {*/
-                                        if (string.Compare(response.ContentType.Split('/')[0].ToLower(), "text") == 0)
+                                        if ((string.Compare(response.ContentType.Split('/')[0].ToLower(), "text") == 0) && (this.serverConfiguration.UseChunks) && (!gzip))
                                         {
+                                            //create the file chunketizer
                                             HTTPDuino.HTTPTextFile content = file.getTextFile();
 
                                             //the page will be send chunked
@@ -119,10 +163,13 @@ namespace HTTPDuino
                                             string Header = response.Encode();
                                             clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
 
-                                            byte[] toSend = null;
-                                            int read = 0;
+                                            //send the file in chunks
                                             while (!content.endOfBlocks())
                                             {
+                                                //the chunk and its length
+                                                byte[] toSend = null;
+                                                int read = 0;
+
                                                 //get a single chunk of data, formatted as it should be
                                                 int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
 
@@ -144,45 +191,37 @@ namespace HTTPDuino
                                         }
                                         else
                                         {
-                                            //HTTPDuino.HTTPBinaryFile content = file.getBinaryFile();
-                                                
-                                            /*while (!content.endOfBlocks)
-                                            {
-                                                byte[] bytes = content.getBlock();
+                                            //create the file reader
+                                            HTTPDuino.HTTPBinaryFile content = file.getBinaryFile();
 
-                                                //send utf-8 data
+                                            //specify if the page is gzipped
+                                            response.GZip = gzip;
+
+                                            //get the number of bytes to be sent
+                                            long fileLength = content.getLength();
+
+                                            //the page will be sent splitted, but the server will provide its length
+                                            response.ContentLength = fileLength;
+                                            response.ContentInline = true;
+                                            response.ConnectionClose = false;
+
+                                            //set the send timeout
+                                            clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
+
+                                            //send the header
+                                            string Header = response.Encode();
+                                            clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
+
+                                            //send the file splitted in 1kB block or less
+                                            while (!content.endOfBlocks)
+                                            {
+                                                byte[] data = content.getBlock();
+
+                                                //send the buffer
                                                 //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                    clientSocket.Send(bytes, SocketFlags.None);
+                                                    clientSocket.Send(data, SocketFlags.None);
                                                 //else
                                                 //    break;
-                                            }*/
-
-                                            //destroy the object
-                                            //content.Dispose();
-
-                                            byte[] data = new byte[1024]; // 1kB buffer
-
-                                            using (FileStream source = new FileStream(requestedResource, FileMode.Open, FileAccess.Read))
-                                            {
-                                                long fileLength = source.Length;
-
-                                                //the page will be sent splitted, but the server will provide its length
-                                                response.ContentLength = fileLength;
-                                                response.ContentInline = true;
-                                                response.ConnectionClose = false;
-
-                                                //send the header
-                                                string Header = response.Encode();
-                                                clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
-
-                                                long totalBytes = 0;
-                                                int currentBlockSize = 0;
-
-                                                while ((currentBlockSize = source.Read(data, 0, data.Length)) > 0)
-                                                {
-                                                    totalBytes += currentBlockSize;
-                                                    clientSocket.Send(data, SocketFlags.None);
-                                                }
                                             }
                                         }
                                     }

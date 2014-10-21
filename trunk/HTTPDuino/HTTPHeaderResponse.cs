@@ -19,6 +19,7 @@ namespace HTTPDuino
         public bool ContentChunked;
         public bool ContentInline;
         public bool ConnectionClose;
+        public bool GZip;
 
         public HTTPHeaderResponse(ResponseType type)
         {
@@ -28,6 +29,7 @@ namespace HTTPDuino
             this.ContentLength = -1;
             this.ContentInline = false;
             this.ConnectionClose = true;
+            this.GZip = false;
         }
 
         public string Encode()
@@ -76,6 +78,9 @@ namespace HTTPDuino
                 headerText += "Content-Length: " + this.ContentLength.ToString() + "\r\n";
             else
                 headerText += "Transfer-Encoding: chunked\r\n";
+
+            if (this.GZip)
+                headerText += "Content-Encoding: gzip\r\n";
 
             if (this.ConnectionClose)
                 headerText += "Connection: close\r\n\r\n";
