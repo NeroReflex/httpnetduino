@@ -9,8 +9,9 @@ namespace HTTPDuino
     {
         private string filePath;
         private System.IO.FileStream fileBytes;
+        private System.IO.FileInfo fileData;
         private long currentPosition;
-        public bool endOfBlocks { set;  get; }
+        public bool endOfBlocks;
 
         public HTTPBinaryFile(string path)
         {
@@ -24,22 +25,30 @@ namespace HTTPDuino
             //initialize the reader
             this.currentPosition = 0;
             this.endOfBlocks = false;
-            this.fileBytes = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+            //retrive file info
+            this.fileData = new FileInfo(this.filePath);
         }
 
         public long getLength()
         {
-            return this.fileBytes.Length;
+            return this.fileData.Length;
         }
 
         public byte[] getBlock()
         {
-            byte[] buffer = new byte[1024];
-            int read = this.fileBytes.Read(buffer, 0, buffer.Length);
-            if (read > 0)
-                this.currentPosition += read;
-            else
-                this.endOfBlocks = true;
+            byte[] buffer = new byte[1024]; // 1kB buffer
+            using (this.fileBytes = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                this.fileBytes.Position = this.currentPosition;
+                int read = this.fileBytes.Read(buffer, 0, buffer.Length);
+                if (read > 0)
+                    this.currentPosition += read;
+                else
+                    this.endOfBlocks = true;
+                this.fileBytes.Close();
+                this.fileBytes.Dispose();
+            }
             return buffer;
         }
 
@@ -52,8 +61,7 @@ namespace HTTPDuino
         public void Dispose()
         {
             //delete every file-related objects
-            this.fileBytes.Close();
-            this.fileBytes.Dispose();
+            this.fileData = null;
             this.filePath = string.Empty;
             this.filePath = null;
         }

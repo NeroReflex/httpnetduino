@@ -7,7 +7,7 @@ namespace HTTPDuino
     {
         public readonly Int16 Port;
         public readonly string RootPath;
-        public bool IncludeMD5;
+        public bool UseChunks;
         public int SendTimeout;
         public int ReceiveTimeout;
         public string[] indexes;
@@ -25,7 +25,7 @@ namespace HTTPDuino
             this.indexes = new string[] { "index.html", "index.xhtml" };
 
             //setup some non-essential data to a default suggested value
-            this.IncludeMD5 = false;
+            this.UseChunks = true;
             this.SendTimeout = 500;
             this.ReceiveTimeout = 500;
         }
