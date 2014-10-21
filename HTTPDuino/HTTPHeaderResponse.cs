@@ -18,6 +18,7 @@ namespace HTTPDuino
         public long ContentLength;
         public bool ContentChunked;
         public bool ContentInline;
+        public bool ConnectionClose;
 
         public HTTPHeaderResponse(ResponseType type)
         {
@@ -26,6 +27,7 @@ namespace HTTPDuino
             this.ContentMD5 = string.Empty;
             this.ContentLength = -1;
             this.ContentInline = false;
+            this.ConnectionClose = true;
         }
 
         public string Encode()
@@ -75,7 +77,10 @@ namespace HTTPDuino
             else
                 headerText += "Transfer-Encoding: chunked\r\n";
 
-            headerText += "Connection: close\r\n\r\n";
+            if (this.ConnectionClose)
+                headerText += "Connection: close\r\n\r\n";
+            else
+                headerText += "Connection: keep-alive\r\n\r\n";
 
             return headerText;
         }

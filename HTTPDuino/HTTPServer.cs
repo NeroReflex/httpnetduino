@@ -104,85 +104,87 @@ namespace HTTPDuino
 
                                         /*try
                                         {*/
-                                            if (string.Compare(response.ContentType.Split('/')[0].ToLower(), "text")  == 0)
+                                        if (string.Compare(response.ContentType.Split('/')[0].ToLower(), "text") == 0)
+                                        {
+                                            HTTPDuino.HTTPTextFile content = file.getTextFile();
+
+                                            //the page will be send chunked
+                                            response.ContentChunked = true;
+                                            response.ConnectionClose = true;
+
+                                            //set the send timeout
+                                            clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
+
+                                            //send the header
+                                            string Header = response.Encode();
+                                            clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
+
+                                            byte[] toSend = null;
+                                            int read = 0;
+                                            while (!content.endOfBlocks())
                                             {
-                                                HTTPDuino.HTTPTextFile content = file.getTextFile();
+                                                //get a single chunk of data, formatted as it should be
+                                                int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
 
-                                                //the page will be send chunked
-                                                response.ContentChunked = true;
-
-                                                //set the send timeout
-                                                clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
-
-                                                //send the header
-                                                string Header = response.Encode();
-                                                clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
-
-                                                byte[] toSend = null;
-                                                int read = 0;
-                                                while (!content.endOfBlocks())
-                                                {
-                                                    //get a single chunk of data, formatted as it should be
-                                                    int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
-
-                                                    //send the chunk of data
-                                                    //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                        clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
-                                                    //else
-                                                    //    break;
-                                                }
-
-                                                //send the end of the page
-                                                string endOfChunks = "00\r\n\r\n";
-
+                                                //send the chunk of data
                                                 //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                    clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
-
-                                                //destroy the object
-                                                content.Dispose();
+                                                clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
+                                                //else
+                                                //    break;
                                             }
-                                            else
+
+                                            //send the end of the page
+                                            string endOfChunks = "00\r\n\r\n";
+
+                                            //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                            clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
+
+                                            //destroy the object
+                                            content.Dispose();
+                                        }
+                                        else
+                                        {
+                                            //HTTPDuino.HTTPBinaryFile content = file.getBinaryFile();
+                                                
+                                            /*while (!content.endOfBlocks)
                                             {
-                                                HTTPDuino.HTTPBinaryFile content = file.getBinaryFile();
+                                                byte[] bytes = content.getBlock();
+
+                                                //send utf-8 data
+                                                //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                                    clientSocket.Send(bytes, SocketFlags.None);
+                                                //else
+                                                //    break;
+                                            }*/
+
+                                            //destroy the object
+                                            //content.Dispose();
+
+                                            byte[] data = new byte[1024]; // 1kB buffer
+
+                                            using (FileStream source = new FileStream(requestedResource, FileMode.Open, FileAccess.Read))
+                                            {
+                                                long fileLength = source.Length;
 
                                                 //the page will be sent splitted, but the server will provide its length
-                                                response.ContentLength = content.getLength();
+                                                response.ContentLength = fileLength;
                                                 response.ContentInline = true;
+                                                response.ConnectionClose = false;
 
                                                 //send the header
                                                 string Header = response.Encode();
                                                 clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
 
-                                                int read = 0;
-                                                
-                                                while (!content.endOfBlocks())
+                                                long totalBytes = 0;
+                                                int currentBlockSize = 0;
+
+                                                while ((currentBlockSize = source.Read(data, 0, data.Length)) > 0)
                                                 {
-                                                    string BlockOfMessage = content.getBlock(ref read);
-                                                    byte[] bytes = Encoding.UTF8.GetBytes(BlockOfMessage);
-
-                                                    //send utf-8 data
-                                                    if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                        clientSocket.Send(bytes, SocketFlags.None);
-                                                    else
-                                                        break;
+                                                    totalBytes += currentBlockSize;
+                                                    clientSocket.Send(data, SocketFlags.None);
                                                 }
-
-                                                //destroy the object
-                                                content.Dispose();
                                             }
-                                        /*}
-                                        catch (SocketException ex)
-                                        {
-                                            Debug.Print("Socket error number " + ex.ErrorCode + "\r\n" + ex.Message);
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            Debug.Print("General error occurred: \r\n" + ex.Message);
-                                        }
-                                        finally
-                                        {
-                                            
-                                        }*/
                                     }
                                     else
                                     {//transmit a 404 Not Found

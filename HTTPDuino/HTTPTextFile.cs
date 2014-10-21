@@ -34,15 +34,15 @@ namespace HTTPDuino
             //empty the byte container that will be filled by a portion of file
             bytes = null;
 
-            //the buffer that will be filled with 255 (or less) chars 
-            char[] buffer = new char[255];
+            //the buffer that will be filled with 1024 (or less) chars 
+            char[] buffer = new char[1024];
 
-            for (read = 0; ((read < 255) && ((this.currentPosition + read) < this.fileInfo.Length)); read++)
+            for (read = 0; ((read < 1024) && ((this.currentPosition + read) < this.fileInfo.Length)); read++)
                 buffer[read] = (char)this.fileStream.Read();
 
             //convert read characters to a string
             string readCharacters = new string(buffer);
-            readCharacters = read.ToString("X2") + "\r\n" + readCharacters + "\r\n";
+            readCharacters = read.ToString("X8") + "\r\n" + readCharacters + "\r\n";
 
             //convert the string to an UTF-8 array of data
             bytes = Encoding.UTF8.GetBytes(readCharacters);
