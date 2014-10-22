@@ -147,6 +147,8 @@ namespace HTTPDuino
                                         HTTPDuino.HTTPFile file = new HTTPFile(requestedResource);
                                         response.ContentType = file.getMIMEType();
 
+                                        Debug.Print("Page served: " + requestedResource);
+
                                         if ((string.Compare(response.ContentType.Split('/')[0].ToLower(), "text") == 0) && (this.serverConfiguration.UseChunks) && (!gzip))
                                         {
                                             //create the file chunketizer
