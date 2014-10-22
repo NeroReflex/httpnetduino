@@ -219,7 +219,7 @@ namespace HTTPDuino
 
                                                 //send the buffer
                                                 //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                    clientSocket.Send(data, SocketFlags.None);
+                                                    clientSocket.Send(data, data.Length, SocketFlags.None);
                                                 //else
                                                 //    break;
                                             }
