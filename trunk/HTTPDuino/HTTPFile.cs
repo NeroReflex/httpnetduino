@@ -5,7 +5,7 @@ using Microsoft.SPOT;
 
 namespace HTTPDuino
 {
-    public class HTTPFile
+    public class HTTPFile : IDisposable
     {
         private string path;
 
@@ -115,6 +115,23 @@ namespace HTTPDuino
             }
             return MIMEType;
         }
+
+        #region IDisposable Members
+        ~HTTPFile()
+        {
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            //delete the memory used to store the root path
+            this.path = string.Empty;
+            this.path = null;
+
+            //force the garbage collector to free more memory as it can
+            Microsoft.SPOT.Debug.GC(true);
+        }
+        #endregion
     }
 
 }

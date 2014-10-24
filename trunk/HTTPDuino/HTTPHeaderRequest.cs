@@ -155,6 +155,9 @@ namespace HTTPDuino
             //delete the client info
             this.client = string.Empty;
             this.client = null;
+
+            //force the garbage collector to free more memory as it can
+            Microsoft.SPOT.Debug.GC(true);
         }
         #endregion
     }
