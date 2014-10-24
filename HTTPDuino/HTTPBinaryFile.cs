@@ -64,6 +64,9 @@ namespace HTTPDuino
             this.fileData = null;
             this.filePath = string.Empty;
             this.filePath = null;
+
+            //force the garbage collector to free more memory as it can
+            Microsoft.SPOT.Debug.GC(true);
         }
         #endregion
     }

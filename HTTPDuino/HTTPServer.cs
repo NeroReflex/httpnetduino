@@ -176,19 +176,29 @@ namespace HTTPDuino
                                                 int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
 
                                                 //send the chunk of data
-                                                //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                                clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
-                                                //else
-                                                //    break;
+                                                try { 
+                                                    clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
+                                                }
+                                                catch (SocketException ex)
+                                                {
+                                                    Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                                    break;
+                                                }
                                             }
 
                                             //send the end of the page
                                             string endOfChunks = "00\r\n\r\n";
 
-                                            //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
-                                            clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
+                                            try
+                                            {
+                                                clientSocket.Send(Encoding.UTF8.GetBytes(endOfChunks), endOfChunks.Length, SocketFlags.None);
+                                            }
+                                            catch (SocketException ex)
+                                            {
+                                                Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                            }
 
-                                            //destroy the object
+                                            //void the stream
                                             content.Dispose();
                                         }
                                         else
@@ -212,7 +222,14 @@ namespace HTTPDuino
 
                                             //send the header
                                             string Header = response.Encode();
-                                            clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
+                                            try
+                                            {
+                                                clientSocket.Send(Encoding.UTF8.GetBytes(Header), Header.Length, SocketFlags.None);
+                                            }
+                                            catch (SocketException ex)
+                                            {
+                                                Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                            }
 
                                             //send the file splitted in 1kB block or less
                                             while (!content.endOfBlocks)
@@ -220,12 +237,23 @@ namespace HTTPDuino
                                                 byte[] data = content.getBlock();
 
                                                 //send the buffer
-                                                //if (!(clientSocket.Poll(this.serverConfiguration.SendTimeout, SelectMode.SelectWrite)) && (clientSocket.Available == 0))
+                                                try
+                                                {
                                                     clientSocket.Send(data, data.Length, SocketFlags.None);
-                                                //else
-                                                //    break;
+                                                }
+                                                catch (SocketException ex)
+                                                {
+                                                    Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                                    break;
+                                                }
                                             }
+
+                                            //void the stream
+                                            content.Dispose();
                                         }
+
+                                        //dispose the file and the used resources
+                                        file.Dispose();
                                     }
                                     else
                                     {//transmit a 404 Not Found
@@ -255,10 +283,23 @@ namespace HTTPDuino
                                         clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
 
                                         //send the header
-                                        clientSocket.Send(Encoding.UTF8.GetBytes(NotFound), NotFound.Length, SocketFlags.None);
+                                        try {
+                                            clientSocket.Send(Encoding.UTF8.GetBytes(NotFound), NotFound.Length, SocketFlags.None);
+                                        }
+                                        catch (SocketException ex)
+                                        {
+                                            Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                        }
 
                                         //send the HTML page
-                                        clientSocket.Send(NotFoundPage, NotFoundPageText.Length, SocketFlags.None);
+                                        try
+                                        {
+                                            clientSocket.Send(NotFoundPage, NotFoundPageText.Length, SocketFlags.None);
+                                        }
+                                        catch (SocketException ex)
+                                        {
+                                            Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                        }
                                     }
                                 }
                                 else
@@ -288,10 +329,24 @@ namespace HTTPDuino
                                     clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
 
                                     //send the header
-                                    clientSocket.Send(Encoding.UTF8.GetBytes(InternalError), InternalError.Length, SocketFlags.None);
+                                    try
+                                    {
+                                        clientSocket.Send(Encoding.UTF8.GetBytes(InternalError), InternalError.Length, SocketFlags.None);
+                                    }
+                                    catch (SocketException ex)
+                                    {
+                                        Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                    }
 
                                     //send the HTML page
-                                    clientSocket.Send(InternalErrorPage, InternalErrorText.Length, SocketFlags.None);
+                                    try
+                                    {
+                                        clientSocket.Send(InternalErrorPage, InternalErrorText.Length, SocketFlags.None);
+                                    }
+                                    catch (SocketException ex)
+                                    {
+                                        Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                    }
                                 }
                             }
                             else
@@ -322,10 +377,24 @@ namespace HTTPDuino
                                 clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
 
                                 //send the header
-                                clientSocket.Send(Encoding.UTF8.GetBytes(MethodNotAllowed), MethodNotAllowed.Length, SocketFlags.None);
+                                try
+                                {
+                                    clientSocket.Send(Encoding.UTF8.GetBytes(MethodNotAllowed), MethodNotAllowed.Length, SocketFlags.None);
+                                }
+                                catch (SocketException ex)
+                                {
+                                    Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                }
 
                                 //send the HTML page
-                                clientSocket.Send(MethodNotAllowedPage, MethodNotAllowedPageText.Length, SocketFlags.None);
+                                try
+                                {
+                                    clientSocket.Send(MethodNotAllowedPage, MethodNotAllowedPageText.Length, SocketFlags.None);
+                                }
+                                catch (SocketException ex)
+                                {
+                                    Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                }
                             }
                         }
                         else
@@ -356,16 +425,32 @@ namespace HTTPDuino
                             clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
 
                             //send the header
-                            clientSocket.Send(Encoding.UTF8.GetBytes(VersionNotSupported), VersionNotSupported.Length, SocketFlags.None);
+                            try
+                            {
+                                clientSocket.Send(Encoding.UTF8.GetBytes(VersionNotSupported), VersionNotSupported.Length, SocketFlags.None);
+                            }
+                            catch (SocketException ex)
+                            {
+                                Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                            }
 
                             //send the HTML page
-                            clientSocket.Send(VersionNotSupportedPage, VersionNotSupportedPageText.Length, SocketFlags.None);
+                            try
+                            {
+                                clientSocket.Send(VersionNotSupportedPage, VersionNotSupportedPageText.Length, SocketFlags.None);
+                            }
+                            catch (SocketException ex)
+                            {
+                                Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                            }
                         }
                     }
 
                     //close the connection
                     clientSocket.Close();
                 }
+                uint freeMem = Microsoft.SPOT.Debug.GC(true);
+                Debug.Print("Free memory: " + freeMem.ToString());
             }
         }
 

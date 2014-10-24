@@ -105,6 +105,9 @@ namespace HTTPDuino
             //delete the content type
             this.ContentType = string.Empty;
             this.ContentType = null;
+
+            //force the garbage collector to free more memory as it can
+            Microsoft.SPOT.Debug.GC(true);
         }
         #endregion
     }
