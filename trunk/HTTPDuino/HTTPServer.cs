@@ -98,7 +98,17 @@ namespace HTTPDuino
                                         fileFound = true;
                                     }
 
-                                    //transmit the file or a 404
+                                    //is the request a special routable request?
+                                    bool validRouting = false;
+
+                                    //check if the request is a routable request
+                                    for (long i = 0; i < this.serverConfiguration.routing.Length; i++)
+                                    {
+                                        if (string.Compare(getRequest, "/" + this.serverConfiguration.routing[i]) == 0)
+                                            validRouting = true;
+                                    }
+
+                                        //transmit the file or a 404
                                     if (fileFound)
                                     {
                                         //should the server send script.min.gzip.js?
@@ -132,7 +142,7 @@ namespace HTTPDuino
                                                         if (fileShrinkedInfo[i].ToLower() == "min")
                                                             gzipFile += "gzip.";
                                                     }
-                                                
+
                                                 //check wether the gzippeed file is requested and existant
                                                 if ((System.IO.File.Exists(gzipFile)) && (gzippable))
                                                 {
@@ -176,7 +186,8 @@ namespace HTTPDuino
                                                 int lengthOfSocketMessage = content.getChunkedBlock(ref toSend, ref read);
 
                                                 //send the chunk of data
-                                                try { 
+                                                try
+                                                {
                                                     clientSocket.Send(toSend, lengthOfSocketMessage, SocketFlags.None);
                                                 }
                                                 catch (SocketException ex)
@@ -255,6 +266,10 @@ namespace HTTPDuino
                                         //dispose the file and the used resources
                                         file.Dispose();
                                     }
+                                    else if (validRouting)
+                                    {
+
+                                    }
                                     else
                                     {//transmit a 404 Not Found
                                         //the 404 HTML page
@@ -283,7 +298,8 @@ namespace HTTPDuino
                                         clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
 
                                         //send the header
-                                        try {
+                                        try
+                                        {
                                             clientSocket.Send(Encoding.UTF8.GetBytes(NotFound), NotFound.Length, SocketFlags.None);
                                         }
                                         catch (SocketException ex)
