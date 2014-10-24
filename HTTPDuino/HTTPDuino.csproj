@@ -32,13 +32,16 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="HTTPBinaryFile.cs" />
+    <Compile Include="HTTPDuinoInfo.cs" />
     <Compile Include="HTTPFile.cs" />
     <Compile Include="HTTPHeaderRequest.cs" />
     <Compile Include="HTTPHeaderResponse.cs" />
     <Compile Include="HTTPTextFile.cs" />
+    <Compile Include="JsonParser.cs" />
     <Compile Include="MD5.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HTTPServer.cs" />
+    <Compile Include="Routing.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.IO" />

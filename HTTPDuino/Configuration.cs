@@ -11,6 +11,7 @@ namespace HTTPDuino
         public int SendTimeout;
         public int ReceiveTimeout;
         public string[] indexes;
+        public HTTPDuino.Routing[] routing;
 
         public Configuration(Int16 UserDefinedPort, string UserDefinedRoot)
         {
@@ -28,6 +29,10 @@ namespace HTTPDuino
             this.UseChunks = true;
             this.SendTimeout = 500;
             this.ReceiveTimeout = 500;
+
+            //setup the basic routing
+            this.routing = new HTTPDuino.Routing[1];
+            this.routing[0] = new HTTPDuino.Routing("info", HTTPDuino.HTTPDuinoInfo.getInfo);
         }
     }
 }
