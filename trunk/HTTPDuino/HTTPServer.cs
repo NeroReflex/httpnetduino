@@ -101,11 +101,20 @@ namespace HTTPDuino
                                     //is the request a special routable request?
                                     bool validRouting = false;
 
+                                    //what is the route number?
+                                    long routingNumber = 0;
+
                                     //check if the request is a routable request
-                                    for (long i = 0; i < this.serverConfiguration.routing.Length; i++)
+                                    long i = 0;
+                                    foreach (HTTPDuino.Routing route in this.serverConfiguration.routing)
                                     {
-                                        if (string.Compare(getRequest, "/" + this.serverConfiguration.routing[i]) == 0)
+                                        string toCheck = route.RoutingName;
+                                        if (string.Compare(getRequest.ToLower(), "\\" + toCheck) == 0)
+                                        {
                                             validRouting = true;
+                                            routingNumber = i;
+                                            i++;
+                                        }
                                     }
 
                                         //transmit the file or a 404
@@ -134,7 +143,7 @@ namespace HTTPDuino
                                                 string gzipFile = string.Empty;
 
                                                 if (gzippable)
-                                                    for (int i = 0; i < fileShrinkedInfo.Length; i++)
+                                                    for (i = 0; i < fileShrinkedInfo.Length; i++)
                                                     {
                                                         gzipFile += fileShrinkedInfo[i];
                                                         if (i != (fileShrinkedInfo.Length - 1))
@@ -268,7 +277,14 @@ namespace HTTPDuino
                                     }
                                     else if (validRouting)
                                     {
+                                        //compute the real time data
+                                        HTTPDuino.JToken realtimeData = this.serverConfiguration.routing[(int)routingNumber].RoutingFunction();
 
+                                        //serialize the obtained JSON
+                                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                                        realtimeData.Serialize(sb);
+                                        string JsonEncodedData = sb.ToString();
+                                        Debug.Print(JsonEncodedData);
                                     }
                                     else
                                     {//transmit a 404 Not Found

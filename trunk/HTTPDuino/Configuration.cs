@@ -34,5 +34,23 @@ namespace HTTPDuino
             this.routing = new HTTPDuino.Routing[1];
             this.routing[0] = new HTTPDuino.Routing("info", HTTPDuino.HTTPDuinoInfo.getInfo);
         }
+
+        public void AddRoute(HTTPDuino.Routing route)
+        {
+            if (this.routing.Length < int.MaxValue)
+            {
+                HTTPDuino.Routing[] copy = new HTTPDuino.Routing[this.routing.Length + 1];
+                for (int i = 0; i < this.routing.Length; i++)
+                    copy[i] = this.routing[i];
+                copy[this.routing.Length] = route;
+                this.routing = copy;
+            }
+            else
+            {
+                throw new Exception("Another route cannot be stored, max of route reached");
+            }
+            
+        }
+
     }
 }

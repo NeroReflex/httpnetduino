@@ -5,8 +5,8 @@ namespace HTTPDuino
 {
     public struct Routing
     {
-        private string RoutingName;
-        public delegate string RoutingMethod(/*HTTPDuino.HTTPHeaderRequest request*/);
+        public string RoutingName;
+        public delegate HTTPDuino.JToken RoutingMethod(/*HTTPDuino.HTTPHeaderRequest request*/);
         public RoutingMethod RoutingFunction;
 
 
