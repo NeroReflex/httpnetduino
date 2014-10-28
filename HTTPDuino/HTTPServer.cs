@@ -22,7 +22,7 @@ namespace HTTPDuino
     {
         private Socket socket = null;
         private HTTPDuino.Configuration serverConfiguration;
-        private bool run = true;
+        private bool run;
 
         /// <summary>
         /// Initializes the httpp web server using the given configuration
@@ -30,17 +30,17 @@ namespace HTTPDuino
         /// <param name="configuration">The configuration to be used by the http web server</param>
         public HTTPServer(HTTPDuino.Configuration configuration)
         {
-            //Save the current configuration
+            //save the current configuration
             this.serverConfiguration = configuration;
             
-            //Initialize Socket class
+            //initialize Socket class
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            //Request and bind to an IP from DHCP server
+            //request and bind to an IP from DHCP server
             socket.Bind(new IPEndPoint(IPAddress.Any, this.serverConfiguration.Port));
             Debug.Print(Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress);
 
-            //Start listen for web requests
+            //start listen for web requests
             socket.Listen(15);
             
             //run the web server
