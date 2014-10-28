@@ -5,7 +5,7 @@ namespace HTTPDuino
 {
 
     /// <summary>
-    /// MD5: A MD5 Message-Digest Algorithm Implementation.
+    /// A MD5 Message-Digest Algorithm Implementation
     /// </summary>
     public class MD5
     {
