@@ -15,11 +15,19 @@ using Microsoft.SPOT.Net.NetworkInformation;
 
 namespace HTTPDuino
 {
+    /// <summary>
+    /// Represents a single http web server instance
+    /// </summary>
     public class HTTPServer : IDisposable
     {
         private Socket socket = null;
         private HTTPDuino.Configuration serverConfiguration;
-        //open connection to onbaord led so we can blink it with every request
+        private bool run = true;
+
+        /// <summary>
+        /// Initializes the httpp web server using the given configuration
+        /// </summary>
+        /// <param name="configuration">The configuration to be used by the http web server</param>
         public HTTPServer(HTTPDuino.Configuration configuration)
         {
             //Save the current configuration
@@ -34,12 +42,17 @@ namespace HTTPDuino
 
             //Start listen for web requests
             socket.Listen(15);
-            //onRequest();
+            
+            //run the web server
+            this.run = true;
         }
 
+        /// <summary>
+        /// Starts the web server
+        /// </summary>
         public void Start()
         {
-            while (true)
+            while (this.run)
             {
                 using (Socket clientSocket = socket.Accept())
                 {
@@ -492,10 +505,15 @@ namespace HTTPDuino
             Dispose();
         }
 
+        /// <summary>
+        /// Cleans up the memory used by the http web server
+        /// </summary>
         public void Dispose()
         {
             if (socket != null)
                 this.socket.Close();
+
+            Microsoft.SPOT.Debug.GC(true);
         }
         #endregion
 
