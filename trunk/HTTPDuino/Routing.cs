@@ -10,7 +10,7 @@ namespace HTTPDuino
     public struct Routing
     {
         public string RoutingName;
-        public delegate HTTPDuino.JToken RoutingMethod(/*HTTPDuino.HTTPHeaderRequest request*/);
+        public delegate HTTPDuino.MicroJSON.JSON RoutingMethod(/*HTTPDuino.HTTPHeaderRequest request*/);
         public RoutingMethod RoutingFunction;
 
 

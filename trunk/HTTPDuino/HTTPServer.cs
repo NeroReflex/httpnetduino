@@ -291,13 +291,10 @@ namespace HTTPDuino
                                     else if (validRouting)
                                     {
                                         //compute the real time data
-                                        HTTPDuino.JToken realtimeData = this.serverConfiguration.routing[(int)routingNumber].RoutingFunction();
+                                        HTTPDuino.MicroJSON.JSON realtimeData = this.serverConfiguration.routing[(int)routingNumber].RoutingFunction();
 
                                         //serialize the obtained JSON
-                                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                                        realtimeData.Serialize(sb);
-                                        string JsonEncodedData = sb.ToString();
-                                        Debug.Print(JsonEncodedData);
+                                        
                                     }
                                     else
                                     {//transmit a 404 Not Found
