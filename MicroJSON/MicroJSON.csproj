@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AssemblyName>HTTPDuino</AssemblyName>
+    <AssemblyName>MicroJSON</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>HTTPDuino</RootNamespace>
+    <RootNamespace>MicroJSON</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4DF125E7-893F-4513-8BD5-7538CCF10782}</ProjectGuid>
+    <ProjectGuid>{64D01E65-EA22-483A-A3C5-1F19D7B9AF63}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
   </PropertyGroup>
@@ -30,30 +30,11 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="HTTPBinaryFile.cs" />
-    <Compile Include="HTTPDuinoInfo.cs" />
-    <Compile Include="HTTPFile.cs" />
-    <Compile Include="HTTPHeaderRequest.cs" />
-    <Compile Include="HTTPHeaderResponse.cs" />
-    <Compile Include="HTTPTextFile.cs" />
-    <Compile Include="MD5.cs" />
-    <Compile Include="MicroJSON\JSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="HTTPServer.cs" />
-    <Compile Include="Routing.cs" />
+    <Compile Include="Class1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
-    <Reference Include="Microsoft.SPOT.Net" />
-    <Reference Include="SecretLabs.NETMF.Hardware, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="SecretLabs.NETMF.Hardware.NetduinoPlus, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="SecretLabs.NETMF.IO, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="System" />
-    <Reference Include="System.IO" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
 </Project>
