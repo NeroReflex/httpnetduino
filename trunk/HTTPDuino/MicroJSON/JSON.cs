@@ -70,9 +70,11 @@ namespace HTTPDuino.MicroJSON
         /// <param name="value">the value of the JSON entity</param>
         public void AppendEntity(string entityName, object value)
         {
-            Debug.Print(value.GetType().FullName);
             //get the type of the json entity
             Type typeOfEntity = value.GetType();
+
+            //is the type supported?
+            bool validType = true;
 
             //store the type of the entity
             switch (typeOfEntity.FullName)
@@ -101,6 +103,7 @@ namespace HTTPDuino.MicroJSON
                     break;
 
                 default:
+                    validType = false;
                     this.JSONValuesTypes.Add(HTTPDuino.MicroJSON.JSON.JSONValueType.Unknown);
                     break;
             }
@@ -113,8 +116,10 @@ namespace HTTPDuino.MicroJSON
 
             //update the number of entity stored
             this.JSONEntityCounter++;
-        }
 
+            //throw an exception
+            throw new Exception("Unsupported type for a JSON entity");
+        }
 
         /// <summary>
         /// Identify the type of a JSON value

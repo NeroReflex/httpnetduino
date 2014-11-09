@@ -512,8 +512,9 @@ namespace HTTPDuino
                     //close the connection
                     clientSocket.Close();
                 }
-                uint freeMem = Microsoft.SPOT.Debug.GC(true);
-                Debug.Print("Free memory: " + freeMem.ToString());
+                
+                //Clear the unused memory
+                Microsoft.SPOT.Debug.GC(true);
             }
         }
 
