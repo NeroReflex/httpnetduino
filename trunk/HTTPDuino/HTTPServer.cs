@@ -298,11 +298,16 @@ namespace HTTPDuino
                                     }
                                     else
                                     {//transmit a 404 Not Found
+
+                                        //build the JSON with server information and place them on the bottom of the page
+                                        HTTPDuino.MicroJSON.JSON info = HTTPDuino.HTTPDuinoInfo.getInfo();
+                                        string page_bottom = "" + (string)info.getEntityValue("server") + " " + (string)info.getEntityValue("version") + " By Netduino from " + (string)info.getEntityValue("host");
+
                                         //the 404 HTML page
                                         string NotFoundPageText = "<!doctype html><html lang=\"en\"><head><title>404 Not Found</title><!--[if lt IE 9]><script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script><![endif]--></head>"
                                         + "<body style='background: #E0FFFF'><h2 style='color: #191970; text-align: center;'>404 Not Found</h2>"
                                         + "<p style='text-align: center;'>The requested file cannot be found on this server. If the problem persists, please, contact the system administrator.</p>"
-                                        + "<hr>HTTPDuino 0.1a Web Server (2014), Netduino from " + Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress + ""
+                                        + "<hr>" + page_bottom
                                         + "</body></html>";
                                         byte[] NotFoundPage = Encoding.UTF8.GetBytes(NotFoundPageText);
 
@@ -346,10 +351,16 @@ namespace HTTPDuino
                                 }
                                 else
                                 {//transmit a 500 Internal Server Error
+
+                                    //build the JSON with server information and place them on the bottom of the page
+                                    HTTPDuino.MicroJSON.JSON info = HTTPDuino.HTTPDuinoInfo.getInfo();
+                                    string page_bottom = "" + (string)info.getEntityValue("server") + " " + (string)info.getEntityValue("version") + " By Netduino from " + (string)info.getEntityValue("host");
+                                    
+                                    //the 505 page
                                     string InternalErrorText = "<!doctype html><html lang=\"en\"><head><title>500 Internal Server Error</title><!--[if lt IE 9]><script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script><![endif]--></head>"
                                         + "<body style='background: #E0FFFF'><h2 style='color: #191970; text-align: center;'>500 Internal Server Error</h2>"
                                         + "<p style='text-align: center;'>The request cannot be processed: probably the device containing the requested file is unmounted or has been removed. If the problem persists, please, contact the system administrator.</p>"
-                                        + "<hr>HTTPDuino 0.1a Web Server (2014), Netduino from " + Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress + ""
+                                        + "<hr>" + page_bottom
                                         + "</body></html>";
                                     byte[] InternalErrorPage = Encoding.UTF8.GetBytes(InternalErrorText);
 
@@ -393,11 +404,16 @@ namespace HTTPDuino
                             }
                             else
                             {//transmit a 405 Method Not Allowed
+
+                                //build the JSON with server information and place them on the bottom of the page
+                                HTTPDuino.MicroJSON.JSON info = HTTPDuino.HTTPDuinoInfo.getInfo();
+                                string page_bottom = "" + (string)info.getEntityValue("server") + " " + (string)info.getEntityValue("version") + " By Netduino from " + (string)info.getEntityValue("host");
+
                                 //the 405 HTML page
                                 string MethodNotAllowedPageText = "<!doctype html><html lang=\"en\"><head><title>405 Method Not Allowed</title><!--[if lt IE 9]><script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script><![endif]--></head>"
                                 + "<body style='background: #E0FFFF'><h2 style='color: #191970; text-align: center;'>405 Method Not Allowed</h2>"
                                 + "<p style='text-align: center;'>The request cannot be processed by this server. If the problem persists, please, contact the system administrator.</p>"
-                                + "<hr>HTTPDuino 0.1a Web Server (2014), Netduino from " + Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress + ""
+                                + "<hr>" + page_bottom
                                 + "</body></html>";
                                 byte[] MethodNotAllowedPage = Encoding.UTF8.GetBytes(MethodNotAllowedPageText);
 
@@ -441,11 +457,16 @@ namespace HTTPDuino
                         }
                         else
                         {//transmit a 505 HTTP Version Not Supported
+
+                            //build the JSON with server information and place them on the bottom of the page
+                            HTTPDuino.MicroJSON.JSON info = HTTPDuino.HTTPDuinoInfo.getInfo();
+                            string page_bottom = "" + (string)info.getEntityValue("server") + " " + (string)info.getEntityValue("version") + " By Netduino from " + (string)info.getEntityValue("host");
+
                             //the 505 HTML page
                             string VersionNotSupportedPageText = "<!doctype html><html lang=\"en\"><head><title>505 HTTP Version Not Supported</title><!--[if lt IE 9]><script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script><![endif]--></head>"
                             + "<body style='background: #E0FFFF'><h2 style='color: #191970; text-align: center;'>505 HTTP Version Not Supported</h2>"
                             + "<p style='text-align: center;'>The request cannot be processed by this server because the HTTP version is not recognized. If the problem persists, please, change your browser.</p>"
-                            + "<hr>HTTPDuino 0.1a Web Server (2014), Netduino from " + Microsoft.SPOT.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()[0].IPAddress + ""
+                            + "<hr>" + page_bottom
                             + "</body></html>";
                             byte[] VersionNotSupportedPage = Encoding.UTF8.GetBytes(VersionNotSupportedPageText);
 
