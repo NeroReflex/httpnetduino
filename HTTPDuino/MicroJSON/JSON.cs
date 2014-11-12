@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Microsoft.SPOT;
 
 namespace HTTPDuino.MicroJSON
@@ -38,6 +39,158 @@ namespace HTTPDuino.MicroJSON
             this.JSONValues = new System.Collections.ArrayList();
             this.JSONValuesTypes = new System.Collections.ArrayList();
             JSONEntityCounter = 0;
+
+            //what is the lexer reading?
+            int reading = 0;
+            /************************
+             *   0 => Nothing       *
+             *   1 => Name          *
+             *   2 => String        *
+             *   3 => Number        *
+             *   4 => Boolean       *
+             *   5 => JSON          *
+             *   6 => After Name    *
+             ***********************/
+
+            System.Text.StringBuilder temp = new StringBuilder();
+            string nameOfEntity = string.Empty;
+            bool symbolFound = false;
+
+            //read every character
+            for (int i = 0; i < jsonMessage.Length; i++)
+                if (reading == 0)
+                {
+                    if (jsonMessage[i] == '\"')
+                    {
+                        reading = 1;
+                        temp.Clear();
+                    }
+                    else if (jsonMessage[i] != ' ')
+                    {
+                        throw new Exception("Unexpected character in a JSON message");
+                    }
+                }
+                else if (reading == 1)
+                {
+                    if (jsonMessage[i] == '\"')
+                    {
+                        nameOfEntity = temp.ToString();
+                        reading = 6;
+                        symbolFound = false;
+                    }
+                    else
+                    {
+                        temp.Append(jsonMessage[i]);
+                    }
+                }
+                else if (reading == 6)
+                {
+                    if (jsonMessage[i] == '=')
+                    {
+                        symbolFound = true;
+                    }
+                    else if (jsonMessage[i] == '\"')
+                    {
+                        if (symbolFound)
+                        {
+                            temp.Clear();
+                            reading = 2;
+                        }
+                        else
+                        {
+                            throw new Exception("Unexpected beginning of entity string");
+                        }
+                    }
+                    else if (jsonMessage[i] == '{')
+                    {
+                        if (symbolFound)
+                        {
+                            temp.Clear();
+                            reading = 5;
+                        }
+                        else
+                        {
+                            throw new Exception("Unexpected beginning of entity JSON");
+                        }
+                    }
+                    else if ((jsonMessage[i] == '-') || (jsonMessage[i] == '+') || (jsonMessage[i] == '0') || (jsonMessage[i] == '1') || (jsonMessage[i] == '2') || (jsonMessage[i] == '3') || (jsonMessage[i] == '4') || (jsonMessage[i] == '5') || (jsonMessage[i] == '6') || (jsonMessage[i] == '7') || (jsonMessage[i] == '8') || (jsonMessage[i] == '9'))
+                    {
+                        if (symbolFound)
+                        {
+                            temp.Clear();
+                            temp.Append(jsonMessage[i]);
+                            reading = 3;
+                        }
+                        else
+                        {
+                            throw new Exception("Unexpected beginning of entity number");
+                        }
+                    }
+                    else if ((jsonMessage[i] == 't') || (jsonMessage[i] == 'f'))
+                    {
+                        if (symbolFound)
+                        {
+                            temp.Clear();
+                            temp.Append(jsonMessage[i]);
+                            reading = 4;
+                        }
+                        else
+                        {
+                            throw new Exception("Unexpected beginning of entity boolean");
+                        }
+                    }
+                }
+        }
+
+        /// <summary>
+        /// Serializes this JSON. The result is a valiid string
+        /// </summary>
+        /// <returns>this JSON encoded as a string</returns>
+        public string Serialize()
+        {
+            //the JSON encoded as a string
+            string stringJSON = string.Empty;
+
+            //each JSON message strarts with a '{'
+            stringJSON += "{ ";
+
+            //encode each JSON entity
+            for (int i = 0; i < this.JSONNames.Count; i++)
+            {
+                //add the name of the current JSON entity to the current JSON message
+                stringJSON += "\"" + (string)this.JSONNames[i] + "\": ";
+
+                //check the type of the value of the current JSON entity
+                if ((JSONValueType)this.JSONValuesTypes[i] == JSONValueType.JSON)
+                {
+                    HTTPDuino.MicroJSON.JSON subJSON = (HTTPDuino.MicroJSON.JSON)this.JSONValues[i];
+                    stringJSON += subJSON.Serialize();
+                }
+                else if ((JSONValueType)this.JSONValuesTypes[i] == JSONValueType.JSONString)
+                {
+                    stringJSON += "\"" + (string)this.JSONValues[i] + "\"";
+                }
+                else if ((JSONValueType)this.JSONValuesTypes[i] == JSONValueType.JSONNumber)
+                {
+                    stringJSON += this.JSONValues[i].ToString();
+                }
+                else if ((JSONValueType)this.JSONValuesTypes[i] == JSONValueType.JSONBoolean)
+                {
+                    if ((System.Boolean)this.JSONValues[i])
+                        stringJSON += "true";
+                    else
+                        stringJSON += "false";
+                }
+
+                if (i != (this.JSONNames.Count - 1))
+                    stringJSON += ", ";
+            }
+
+            //each JSON message ends with a '}'
+            stringJSON += " }";
+
+            //return the encoded JSON
+            return stringJSON;
         }
 
         /// <summary>
@@ -118,7 +271,8 @@ namespace HTTPDuino.MicroJSON
             this.JSONEntityCounter++;
 
             //throw an exception
-            throw new Exception("Unsupported type for a JSON entity");
+            if (!validType)
+                throw new Exception("Unsupported type for a JSON entity");
         }
 
         /// <summary>
