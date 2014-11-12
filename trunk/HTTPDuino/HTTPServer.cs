@@ -292,9 +292,49 @@ namespace HTTPDuino
                                     {
                                         //compute the real time data
                                         HTTPDuino.MicroJSON.JSON realtimeData = this.serverConfiguration.routing[(int)routingNumber].RoutingFunction();
+                                        string RealTimeDataEncoded = realtimeData.Serialize();
+                                        byte[] JSONRealTimeDataJSON = Encoding.UTF8.GetBytes(RealTimeDataEncoded);
 
                                         //serialize the obtained JSON
-                                        
+                                        string JSONMessage = realtimeData.Serialize();
+
+                                        //the MD5 of the JSON encoded message
+                                        HTTPDuino.MD5 MD5Provider = new HTTPDuino.MD5();
+                                        MD5Provider.Initialize();
+                                        MD5Provider.HashCore(JSONRealTimeDataJSON, 0, JSONRealTimeDataJSON.Length);
+                                        MD5Provider.HashFinal();
+                                        string JSONMessageMD5 = MD5Provider.HexStr();
+
+                                        //the HTTP header for the JSON encoded message
+                                        HTTPDuino.HTTPHeaderResponse JSONRealTimeDataHeader = new HTTPDuino.HTTPHeaderResponse(ResponseType.OK_200);
+                                        JSONRealTimeDataHeader.ContentChunked = false;
+                                        JSONRealTimeDataHeader.ContentMD5 = JSONMessageMD5;
+                                        JSONRealTimeDataHeader.ContentLength = RealTimeDataEncoded.Length;
+                                        JSONRealTimeDataHeader.ContentType = "application/json";
+                                        string JSONRealTimeDataHeaderText = JSONRealTimeDataHeader.Encode();
+
+                                        //set the send timeout
+                                        clientSocket.SendTimeout = this.serverConfiguration.SendTimeout;
+
+                                        //send the header
+                                        try
+                                        {
+                                            clientSocket.Send(Encoding.UTF8.GetBytes(JSONRealTimeDataHeaderText), JSONRealTimeDataHeaderText.Length, SocketFlags.None);
+                                        }
+                                        catch (SocketException ex)
+                                        {
+                                            Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                        }
+
+                                        //send the JSON message
+                                        try
+                                        {
+                                            clientSocket.Send(JSONRealTimeDataJSON, RealTimeDataEncoded.Length, SocketFlags.None);
+                                        }
+                                        catch (SocketException ex)
+                                        {
+                                            Debug.Print("Error code: " + ex.ErrorCode + "\r\nError message: " + ex.Message);
+                                        }
                                     }
                                     else
                                     {//transmit a 404 Not Found
